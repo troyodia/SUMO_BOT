@@ -22,7 +22,13 @@ BUILD_DIR = build
 OBJ_DIR = $(BUILD_DIR)/obj
 BIN_DIR = $(BUILD_DIR)/bin
 CPPCHECK = cppcheck 
-CPPCHECK_INCLUDES = ./src ./
+CPPCHECK_INCLUDES = \
+./Src/app \
+./Src/common \
+./Src/drivers \
+./Src/test
+
+
 CPPCHECK_FLAGS = \
 	--quiet --enable=all --error-exitcode=1 \
 	--inline-suppr \
@@ -40,6 +46,14 @@ Src/drivers/i2c.c \
 Src/drivers/uart.c \
 Src/test/test.c \
 Src/system_stm32l4xx.c  
+
+C_SOURCES_WITH_HEADERS = \
+Src/main.c \
+Src/app/drive.c \
+Src/app/enemy.c \
+Src/drivers/i2c.c \
+Src/drivers/uart.c \
+Src/test/test.c \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -170,5 +184,5 @@ flash: all
 	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
 #######################################
 cppcheck: 
-	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(C_SOURCES)
+	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(C_SOURCES_WITH_HEADERS)
 # *** EOF ***

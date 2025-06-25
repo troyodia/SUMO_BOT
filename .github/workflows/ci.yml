@@ -7,5 +7,5 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
-      - run: make
+      - run: GCC_PATH=/home/stm32/dev/tools/arm-none-eabi/bin make
       - run: make cppcheck

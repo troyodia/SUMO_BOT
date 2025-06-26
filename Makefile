@@ -47,7 +47,7 @@ Src/app/enemy.c \
 Src/drivers/i2c.c \
 Src/drivers/uart.c \
 Src/test/test.c \
-Src/system_stm32l4xx.c  
+Src/system_stm32l4xx.c \
 
 C_SOURCES_WITH_HEADERS = \
 Src/main.c \
@@ -70,6 +70,7 @@ ASMM_SOURCES =
 #######################################
 GCC_DIR = $(GCC_PATH)
 PREFIX = arm-none-eabi-
+# The gcc compiler bin path can be either defined in make command via GCC_DIR variable (> make GCC_DIR=xxx)
 # The gcc compiler bin path can be either defined in make command via GCC_DIR variable (> make GCC_DIR=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_DIR
@@ -186,7 +187,8 @@ flash: all
 	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
 #######################################
 cppcheck: 
-	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(C_SOURCES)
+	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(C_SOURCES_WITH_HEADERS)
+#######################################
 format:
 	@$(FORMAT) -i $(C_SOURCES)
 # *** EOF ***

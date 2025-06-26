@@ -1,4 +1,4 @@
-.PHONY: all clean flash cppcheck
+.PHONY: all clean flash cppcheck format
 ######################################
 # target
 ######################################
@@ -22,6 +22,7 @@ BUILD_DIR = build
 OBJ_DIR = $(BUILD_DIR)/obj
 BIN_DIR = $(BUILD_DIR)/bin
 CPPCHECK = cppcheck 
+FORMAT = clang-format
 CPPCHECK_INCLUDES = \
 ./Src/app \
 ./Src/common \
@@ -33,6 +34,7 @@ CPPCHECK_FLAGS = \
 	--quiet --enable=all --error-exitcode=1 \
 	--inline-suppr \
 	$(addprefix -I,$(CPPCHECK_INCLUDES)) 	
+
 
 ######################################
 # source
@@ -184,5 +186,7 @@ flash: all
 	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
 #######################################
 cppcheck: 
-	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(C_SOURCES_WITH_HEADERS)
+	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(C_SOURCES)
+format:
+	@$(FORMAT) -i $(C_SOURCES)
 # *** EOF ***

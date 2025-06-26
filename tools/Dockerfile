@@ -3,7 +3,7 @@ FROM ubuntu:24.04
 #install necessary packages
 RUN DEBAIN_FRONTEND=noninteractive \
     apt-get update \
-    && apt-get install -y wget bzip2 make unzip cppcheck
+    && apt-get install -y wget bzip2 make unzip cppcheck clang-format git
 
 # create a non-root user named "stm32user"
 # put in root group as Github actions need permissions

@@ -1,4 +1,4 @@
-.PHONY: all clean flash cppcheck
+.PHONY: all clean flash cppcheck format
 ######################################
 # target
 ######################################
@@ -22,6 +22,7 @@ BUILD_DIR = build
 OBJ_DIR = $(BUILD_DIR)/obj
 BIN_DIR = $(BUILD_DIR)/bin
 CPPCHECK = cppcheck 
+FORMAT = clang-format
 CPPCHECK_INCLUDES = \
 ./Src/app \
 ./Src/common \
@@ -34,6 +35,7 @@ CPPCHECK_FLAGS = \
 	--inline-suppr \
 	$(addprefix -I,$(CPPCHECK_INCLUDES)) 	
 
+
 ######################################
 # source
 ######################################
@@ -45,7 +47,7 @@ Src/app/enemy.c \
 Src/drivers/i2c.c \
 Src/drivers/uart.c \
 Src/test/test.c \
-Src/system_stm32l4xx.c  
+Src/system_stm32l4xx.c \
 
 C_SOURCES_WITH_HEADERS = \
 Src/main.c \
@@ -68,6 +70,7 @@ ASMM_SOURCES =
 #######################################
 GCC_DIR = $(GCC_PATH)
 PREFIX = arm-none-eabi-
+# The gcc compiler bin path can be either defined in make command via GCC_DIR variable (> make GCC_DIR=xxx)
 # The gcc compiler bin path can be either defined in make command via GCC_DIR variable (> make GCC_DIR=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_DIR
@@ -185,4 +188,7 @@ flash: all
 #######################################
 cppcheck: 
 	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(C_SOURCES_WITH_HEADERS)
+#######################################
+format:
+	@$(FORMAT) -i $(C_SOURCES)
 # *** EOF ***

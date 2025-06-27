@@ -3,9 +3,10 @@ jobs:
   build-and_static_analysis:
     runs-on: ubuntu-latest
     container:
-      image: troyodia/arm-none-eabi-10.3:latest
+      image: troyodia/gcc-arm-none-eabi-10.3:latest
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
-      - run: GCC_PATH=/home/stm32/dev/tools/arm-none-eabi/bin make
+      - run: make format
       - run: make cppcheck
+      - run: GCC_PATH=/home/stm32/dev/tools/gcc-arm-none-eabi-10.3-2021.10/bin make

@@ -49,13 +49,24 @@ Src/drivers/uart.c \
 Src/test/test.c \
 Src/system_stm32l4xx.c \
 
-C_SOURCES_WITH_HEADERS = \
+CPP_CHECK_C_SOURCES =  \
 Src/main.c \
 Src/app/drive.c \
 Src/app/enemy.c \
 Src/drivers/i2c.c \
 Src/drivers/uart.c \
 Src/test/test.c \
+
+C_SOURCES_WITH_HEADERS = \
+Src/app/drive.c \
+Src/app/enemy.c \
+Src/drivers/i2c.c \
+Src/drivers/uart.c \
+Src/test/test.c \
+
+HEADERS = \
+$(C_SOURCES_WITH_HEADERS:.c=.h) \
+Src/common/defines.h \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -166,13 +177,13 @@ $(OBJ_DIR)/%.o: %.s Makefile
 	@mkdir -p $(dir $@)
 	$(AS) -c $(CFLAGS) $< -o $@
 
-$(OBJ_DIR)/%.o: %.S Makefile 
+$(OBJ_DIR)/%.o: %.S Makefile
 	@mkdir -p $(dir $@)
 	$(AS) -c $(CFLAGS) $< -o $@
 
-$(BIN_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
+$(BIN_DIR)/$(TARGET).elf: $(OBJECTS) $(HEADERS) 
 	@mkdir -p $(dir $@)
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	$(CC) $(LDFLAGS) $^ -o $@
 	$(SZ) $@
 
 	
@@ -187,8 +198,8 @@ flash: all
 	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
 #######################################
 cppcheck: 
-	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(C_SOURCES_WITH_HEADERS)
+	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPP_CHECK_C_SOURCES)
 #######################################
 format:
-	@$(FORMAT) -i $(C_SOURCES)
+	@$(FORMAT) -i $(C_SOURCES) $(HEADERS)
 # *** EOF ***

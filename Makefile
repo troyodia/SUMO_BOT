@@ -24,10 +24,10 @@ BIN_DIR = $(BUILD_DIR)/bin
 CPPCHECK = cppcheck 
 FORMAT = clang-format
 CPPCHECK_INCLUDES = \
-	./Src/app \
-	./Src/common \
-	./Src/drivers \
-	./Src/test
+./Src/app \
+./Src/common \
+./Src/drivers \
+./Src/test
 
 
 CPPCHECK_FLAGS = \
@@ -44,28 +44,36 @@ CPPCHECK_FLAGS = \
 ######################################
 # C sources
 C_SOURCES =  \
-	Src/main.c \
-	Src/app/drive.c \
-	Src/app/enemy.c \
-	Src/drivers/io.c \
-	Src/system_stm32l4xx.c \
+Src/main.c \
+Src/app/drive.c \
+Src/app/enemy.c \
+Src/drivers/i2c.c \
+Src/drivers/uart.c \
+Src/test/test.c \
+Src/system_stm32l4xx.c \
 
 CPP_CHECK_C_SOURCES =  \
-	Src/main.c \
-	$(C_SOURCES_WITH_HEADERS) \
+Src/main.c \
+Src/app/drive.c \
+Src/app/enemy.c \
+Src/drivers/i2c.c \
+Src/drivers/uart.c \
+Src/test/test.c \
 
 C_SOURCES_WITH_HEADERS = \
-	Src/app/drive.c \
-	Src/app/enemy.c \
-	Src/drivers/io.c \
+Src/app/drive.c \
+Src/app/enemy.c \
+Src/drivers/i2c.c \
+Src/drivers/uart.c \
+Src/test/test.c \
 
 HEADERS = \
-	$(C_SOURCES_WITH_HEADERS:.c=.h) \
-	Src/common/defines.h \
+$(C_SOURCES_WITH_HEADERS:.c=.h) \
+Src/common/defines.h \
 
 # ASM sources
 ASM_SOURCES =  \
-	Startup/startup_stm32l476rgtx.s
+Startup/startup_stm32l476rgtx.s
 
 # ASM sources
 ASMM_SOURCES = 
@@ -122,20 +130,14 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
-	Drivers/CMSIS/Device/ST/STM32L4xx/Include \
-	Drivers/CMSIS/Include \
-	Src/app \
-	Src/common \
-	Src/drivers \
-	Src/test \
-	external/printf \
-
+-IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
+-IDrivers/CMSIS/Include \
 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(addprefix -I,$(C_INCLUDES)) $(OPT) -Wall -Wextra -Werror -fdata-sections -ffunction-sections
+CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -Wextra -Werror -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -170,7 +172,7 @@ OBJECTS += $(addprefix $(OBJ_DIR)/,$(ASMM_SOURCES:.S=.o))
 vpath %.S $(sort $(dir $(ASMM_SOURCES)))
 	
 
-$(OBJ_DIR)/%.o: %.c Makefile 
+$(OBJ_DIR)/%.o: %.c Makefile
 	@mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) $< -o $@
 

@@ -14,8 +14,165 @@ io_e pins to get their port and pin numbers
 #define IO_PIN_MASK (0xFu)
 
 #define IO_PORT_CNT (3U)
-#define IO_PIN_PER_PORT_CNT (16U)
+#define IO_PIN_CNT (114U)
 
+/* Array holds the initial config for each pin
+ * Configure unused pins as input with pull down resistors
+ * Configure the pin to prevent unpredictable noise for floating pins   */
+#define UNUSED_PIN_CONFIG                                                                          \
+    {                                                                                              \
+        IO_MODE_INPUT, IO_PORT_PD, IO_SPEED_LOW, IO_TYPE_PP                                        \
+    }
+static struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
+    // line detectors set up as analog input
+    [IO_LD_FRONT_LEFT] = { .mode = IO_MODE_ANALOG,
+                           .pupd = IO_NO_PUPD,
+                           .speed = IO_SPEED_LOW,
+                           .type = IO_TYPE_PP },
+    [IO_LD_BACK_LEFT] = { .mode = IO_MODE_ANALOG,
+                          .pupd = IO_NO_PUPD,
+                          .speed = IO_SPEED_LOW,
+                          .type = IO_TYPE_PP },
+    [IO_LD_FRONT_RIGHT] = { .mode = IO_MODE_ANALOG,
+                            .pupd = IO_NO_PUPD,
+                            .speed = IO_SPEED_LOW,
+                            .type = IO_TYPE_PP },
+    [IO_LD_BACK_RIGHT] = { .mode = IO_MODE_ANALOG,
+                           .pupd = IO_NO_PUPD,
+                           .speed = IO_SPEED_LOW,
+                           .type = IO_TYPE_PP },
+    [IO_UNUSED_1] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_2] = UNUSED_PIN_CONFIG,
+    // test led setup as an output, held low initiailly
+    [IO_TEST_LED] = { .mode = IO_MODE_OUPUT,
+                      .pupd = IO_NO_PUPD,
+                      .speed = IO_SPEED_VERY_HIGH,
+                      .type = IO_TYPE_PP },
+    /* Range sensor xshut set up as outputs*/
+    [IO_XSHUT_FRONT_LEFT] = { .mode = IO_MODE_OUPUT,
+                              .pupd = IO_NO_PUPD,
+                              .speed = IO_SPEED_VERY_HIGH,
+                              .type = IO_TYPE_PP },
+    [IO_XSHUT_FRONT_RIGHT] = { .mode = IO_MODE_OUPUT,
+                               .pupd = IO_NO_PUPD,
+                               .speed = IO_SPEED_VERY_HIGH,
+                               .type = IO_TYPE_PP },
+    [IO_XSHUT_RIGHT] = { .mode = IO_MODE_OUPUT,
+                         .pupd = IO_NO_PUPD,
+                         .speed = IO_SPEED_VERY_HIGH,
+                         .type = IO_TYPE_PP },
+    [IO_XSHUT_LEFT] = { .mode = IO_MODE_OUPUT,
+                        .pupd = IO_NO_PUPD,
+                        .speed = IO_SPEED_VERY_HIGH,
+                        .type = IO_TYPE_PP },
+    [IO_XSHUT_FRONT] = { .mode = IO_MODE_OUPUT,
+                         .pupd = IO_NO_PUPD,
+                         .speed = IO_SPEED_VERY_HIGH,
+                         .type = IO_TYPE_PP },
+    // IR reciever setup as an input
+    [IO_IR_REMOTE] = { .mode = IO_MODE_INPUT,
+                       .pupd = IO_NO_PUPD,
+                       .speed = IO_SPEED_LOW,
+                       .type = IO_TYPE_PP },
+    [IO_UNUSED_3] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_4] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_5] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_6] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_7] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_8] = UNUSED_PIN_CONFIG,
+    /* Range sensor interrupt output open drain
+     * A 10k ohm external pull up resistor is suggested but the microcontrollers internal pull up is
+     * being used */
+    [IO_RANGE_SENSOR_INT_FRONT] = { .mode = IO_MODE_INPUT,
+                                    .pupd = IO_PORT_PU,
+                                    .speed = IO_SPEED_LOW,
+                                    .type = IO_TYPE_PP },
+    [IO_UNUSED_9] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_10] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_11] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_12] = UNUSED_PIN_CONFIG,
+
+    /* uart transmit
+     * mode: alternate function
+     * pupd: no pupd (output not required)*/
+    [IO_UART_TX] = { .mode = IO_MODE_ALTFN,
+                     .pupd = IO_NO_PUPD,
+                     .speed = IO_SPEED_HIGH,
+                     .type = IO_TYPE_PP },
+    /* uart recieve
+     * mode: alternate function
+     * pupd: pulled down*/
+    [IO_UART_RX] = { .mode = IO_MODE_ALTFN,
+                     .pupd = IO_PORT_PD,
+                     .speed = IO_SPEED_LOW,
+                     .type = IO_TYPE_PP },
+    [IO_UNUSED_13] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_14] = UNUSED_PIN_CONFIG,
+
+    // motor channel pins setup as output +
+    [IO_MOTOR_LEFT_CH1] = { .mode = IO_MODE_OUPUT,
+                            .pupd = IO_NO_PUPD,
+                            .speed = IO_SPEED_VERY_HIGH,
+                            .type = IO_TYPE_PP },
+    [IO_MOTOR_LEFT_CH2] = { .mode = IO_MODE_OUPUT,
+                            .pupd = IO_NO_PUPD,
+                            .speed = IO_SPEED_VERY_HIGH,
+                            .type = IO_TYPE_PP },
+    [IO_MOTOR_RIGHT_CH1] = { .mode = IO_MODE_OUPUT,
+                             .pupd = IO_NO_PUPD,
+                             .speed = IO_SPEED_VERY_HIGH,
+                             .type = IO_TYPE_PP },
+    [IO_MOTOR_RIGHT_CH2] = { .mode = IO_MODE_OUPUT,
+                             .pupd = IO_NO_PUPD,
+                             .speed = IO_SPEED_VERY_HIGH,
+                             .type = IO_TYPE_PP },
+    [IO_UNUSED_15] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_16] = UNUSED_PIN_CONFIG,
+
+    /* I2C pins
+     * mode = alternate function
+     * pupd = no pupd
+     * type = open drain (important)*/
+    [IO_I2C_SCL] = { .mode = IO_MODE_ALTFN,
+                     .pupd = IO_NO_PUPD,
+                     .speed = IO_SPEED_VERY_HIGH,
+                     .type = IO_TYPE_OD },
+    [IO_I2C_SDA] = { .mode = IO_MODE_ALTFN,
+                     .pupd = IO_NO_PUPD,
+                     .speed = IO_SPEED_VERY_HIGH,
+                     .type = IO_TYPE_OD },
+    [IO_UNUSED_17] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_18] = UNUSED_PIN_CONFIG,
+    // motor pwm pins set up as alternate function
+    [IO_MOTOR_PWM_LEFT] = { .mode = IO_MODE_ALTFN,
+                            .pupd = IO_NO_PUPD,
+                            .speed = IO_SPEED_VERY_HIGH,
+                            .type = IO_TYPE_PP },
+    [IO_MOTOR_PWM_RIGHT] = { .mode = IO_MODE_ALTFN,
+                             .pupd = IO_NO_PUPD,
+                             .speed = IO_SPEED_VERY_HIGH,
+                             .type = IO_TYPE_PP },
+    [IO_UNUSED_19] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_20] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_21] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_22] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_23] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_24] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_25] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_26] = UNUSED_PIN_CONFIG,
+
+};
+void io_init()
+{
+    // volatile unsigned int i;
+    io_e io_pin;
+    for (io_pin = (io_e)IO_PA_0; io_pin < ARRAY_SIZE(io_pins_initial_configs); io_pin++) {
+        io_configure(io_pin, &io_pins_initial_configs[io_pin]);
+    }
+    // for (i = 0; i < sizeof(io_pins_initial_configs) / sizeof(io_pins_initial_configs[0]); i++) {
+    //     io_configure()
+    // }
+}
 static inline uint8_t io_get_port(io_e io)
 {
     return (io & IO_PORT_MASK) >> IO_PORT_OFFSET;
@@ -33,10 +190,22 @@ void io_configure(io_e io, const struct io_config *config)
 {
     io_port_init(io);
     io_set_mode(io, config->mode);
-    io_set_output_type(io);
+    io_set_output_type(io, config->type);
     io_set_pupd(io, config->pupd); // no pupd for output
-    if (config->mode != IO_MODE_INPUT) {
+    switch (config->mode) {
+    case IO_MODE_INPUT:
+        break;
+
+    case IO_MODE_OUPUT:
         io_set_output_speed(io, config->speed);
+        break;
+
+    case IO_MODE_ALTFN:
+        io_set_output_speed(io, config->speed);
+        break;
+
+    case IO_MODE_ANALOG:
+        break;
     }
 }
 void io_port_init(io_e io)
@@ -58,13 +227,20 @@ void io_set_mode(io_e io, io_mode_e mode)
     GPIO->MODER |= (mode << (2 * pin));
 };
 
-void io_set_output_type(io_e io) // always set output type as push pull
+void io_set_output_type(io_e io, io_out_type_e type)
 {
     const uint8_t pin = io_get_pin_idx(io);
     const uint8_t port = io_get_port(io);
 
     GPIO_TypeDef *GPIO = gpio_port_regs[port];
-    GPIO->OTYPER &= ~(0x1 << pin);
+    switch (type) {
+    case IO_TYPE_PP:
+        GPIO->OTYPER &= ~(0x1 << pin);
+        break;
+    case IO_TYPE_OD:
+        GPIO->OTYPER |= (0x1 << pin);
+        break;
+    }
 }
 void io_set_pupd(io_e io, io_pupd_e pupd)
 {

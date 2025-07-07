@@ -16,6 +16,7 @@ io_e pins to get their port and pin numbers
 #define IO_PORT_CNT (3U)
 #define IO_PIN_CNT (48U)
 
+
 /* Array holds the initial config for each pin
  * Configure unused pins as input with pull down resistors
  * Configure the pin to prevent unpredictable noise for floating pins   */
@@ -23,6 +24,7 @@ io_e pins to get their port and pin numbers
     {                                                                                              \
         IO_MODE_INPUT, IO_PORT_PD, IO_SPEED_LOW, IO_TYPE_PP                                        \
     }
+
 
 static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
     // line detectors set up as analog input

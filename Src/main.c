@@ -22,6 +22,7 @@ static void blink_test_led()
     }
 }
 
+
 // static void test_nucleo_board_io_pins_output(void)
 // {
 //     const struct io_config output_config = { .mode = IO_MODE_OUPUT,

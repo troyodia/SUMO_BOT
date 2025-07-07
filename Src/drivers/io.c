@@ -14,7 +14,8 @@ io_e pins to get their port and pin numbers
 #define IO_PIN_MASK (0xFu)
 
 #define IO_PORT_CNT (3U)
-#define IO_PIN_CNT (114U)
+#define IO_PIN_CNT (48U)
+
 
 /* Array holds the initial config for each pin
  * Configure unused pins as input with pull down resistors
@@ -23,7 +24,9 @@ io_e pins to get their port and pin numbers
     {                                                                                              \
         IO_MODE_INPUT, IO_PORT_PD, IO_SPEED_LOW, IO_TYPE_PP                                        \
     }
-static struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
+
+
+static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
     // line detectors set up as analog input
     [IO_LD_FRONT_LEFT] = { .mode = IO_MODE_ANALOG,
                            .pupd = IO_NO_PUPD,
@@ -81,7 +84,8 @@ static struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
     [IO_UNUSED_7] = UNUSED_PIN_CONFIG,
     [IO_UNUSED_8] = UNUSED_PIN_CONFIG,
     /* Range sensor interrupt output open drain
-     * A 10k ohm external pull up resistor is suggested but the microcontrollers internal pull up is
+     * A 10k ohm external pull up resistor is suggested but the microcontrollers internal pull up
+     is
      * being used */
     [IO_RANGE_SENSOR_INT_FRONT] = { .mode = IO_MODE_INPUT,
                                     .pupd = IO_PORT_PU,
@@ -162,16 +166,21 @@ static struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
     [IO_UNUSED_26] = UNUSED_PIN_CONFIG,
 
 };
-void io_init()
+void io_init(void)
 {
-    // volatile unsigned int i;
     io_e io_pin;
+    const struct io_config io_unused_config = UNUSED_PIN_CONFIG;
+
     for (io_pin = (io_e)IO_PA_0; io_pin < ARRAY_SIZE(io_pins_initial_configs); io_pin++) {
+        if (io_pin == IO_UNUSED_6 || io_pin == IO_UNUSED_7) {
+            continue;
+        }
         io_configure(io_pin, &io_pins_initial_configs[io_pin]);
     }
-    // for (i = 0; i < sizeof(io_pins_initial_configs) / sizeof(io_pins_initial_configs[0]); i++) {
-    //     io_configure()
-    // }
+
+    io_configure(IO_UNUSED_27, &io_unused_config);
+    io_configure(IO_UNUSED_28, &io_unused_config);
+    io_configure(IO_UNUSED_29, &io_unused_config);
 }
 static inline uint8_t io_get_port(io_e io)
 {

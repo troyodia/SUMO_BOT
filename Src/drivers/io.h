@@ -1,5 +1,6 @@
 #ifndef IO_H
 #define IO_H
+#include "stdbool.h"
 // ENUMS
 typedef enum
 {
@@ -166,6 +167,8 @@ struct io_config
 // FUNCTIONS
 void io_init(void);
 void io_configure(io_e io, const struct io_config *config);
+void io_get_io_config(io_e io, struct io_config *current_config);
+bool io_compare_io_config(const struct io_config *config1, const struct io_config *config2);
 void io_port_init(io_e io);
 void io_set_mode(io_e io, io_mode_e mode);
 void io_set_output_type(io_e io, io_out_type_e type);

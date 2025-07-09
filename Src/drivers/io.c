@@ -16,7 +16,6 @@ io_e pins to get their port and pin numbers
 #define IO_PORT_CNT (3U)
 #define IO_PIN_CNT (48U)
 
-
 /* Array holds the initial config for each pin
  * Configure unused pins as input with pull down resistors
  * Configure the pin to prevent unpredictable noise for floating pins   */
@@ -24,7 +23,6 @@ io_e pins to get their port and pin numbers
     {                                                                                              \
         IO_MODE_INPUT, IO_PORT_PD, IO_SPEED_LOW, IO_TYPE_PP                                        \
     }
-
 
 static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
     // line detectors set up as analog input
@@ -295,3 +293,30 @@ io_in_e io_get_input(io_e io)
     const uint8_t input = GPIO->IDR & (0x1 << pin);
     return input ? IO_IN_HIGH : IO_IN_LOW;
 }
+void io_get_io_config(io_e io, struct io_config *current_config)
+{
+    const uint8_t pin = io_get_pin_idx(io);
+    const uint8_t port = io_get_port(io);
+
+    const GPIO_TypeDef *GPIO = gpio_port_regs[port];
+    current_config->mode = (io_mode_e)((GPIO->MODER & (0x3 << (2 * pin))) >> (2 * pin));
+    current_config->pupd = (io_pupd_e)((GPIO->PUPDR & (0x3 << (2 * pin))) >> (2 * pin));
+    current_config->speed = (io_ouput_speed_e)((GPIO->OSPEEDR & (0x3 << (2 * pin))) >> (2 * pin));
+    current_config->type = (io_out_type_e)((GPIO->OTYPER & (0x1 << pin)) >> pin);
+};
+bool io_compare_io_config(const struct io_config *config1, const struct io_config *config2)
+{
+    if (config1->mode != config2->mode) {
+        return false;
+    }
+    if (config1->pupd != config2->pupd) {
+        return false;
+    }
+    if (config1->speed != config2->speed) {
+        return false;
+    }
+    if (config1->type != config2->type) {
+        return false;
+    }
+    return true;
+};

@@ -50,6 +50,8 @@ C_SOURCES =  \
 	Src/app/enemy.c \
 	Src/drivers/io.c \
 	Src/drivers/mcu_init.c \
+	Src/drivers/led.c \
+	Src/common/assert_handler.c \
 	Src/system_stm32l4xx.c \
 
 C_SOURCES_WITH_HEADERS = \
@@ -57,6 +59,8 @@ C_SOURCES_WITH_HEADERS = \
 	Src/app/enemy.c \
 	Src/drivers/io.c \
 	Src/drivers/mcu_init.c \
+	Src/drivers/led.c \
+	Src/common/assert_handler.c \
 
 CPP_CHECK_C_SOURCES =  \
 	Src/main.c \

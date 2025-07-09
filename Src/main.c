@@ -1,27 +1,30 @@
 #include "./drivers/io.h"
 #include "./drivers/mcu_init.h"
+#include "./common/assert_handler.h"
+#include "./drivers/led.h"
+#include "./common/defines.h"
 static void test_setup(void)
 {
     mcu_init();
 }
+// static void test_assert(void)
+// {
+//     test_setup();
+//     ASSERT(0);
+// }
 static void blink_test_led()
 {
     test_setup();
-    // const struct io_config led_config = {
-    //     .mode = IO_MODE_OUPUT, .pupd = IO_NO_PUPD, .speed = IO_SPEED_LOW, .type = IO_TYPE_PP
-    // };
-    // io_configure(IO_TEST_LED, &led_config);
-
-    // volatile unsigned int i;
-    // io_out_e out = IO_OUT_LOW;
-
+    led_init();
+    // led_init();
+    volatile int j;
+    led_state_e led_state = LED_STATE_OFF;
     while (1) {
-        // out = (out == IO_OUT_LOW) ? IO_OUT_HIGH : IO_OUT_LOW;
-        io_set_output(IO_TEST_LED, IO_OUT_HIGH);
-        // for (i = 100000; i > 0; i--) { } // delay
+        led_state = (led_state == LED_STATE_OFF) ? LED_STATE_ON : LED_STATE_OFF;
+        led_set(LED_TEST, led_state);
+        BUSY_WAIT_ms(80)
     }
 }
-
 
 // static void test_nucleo_board_io_pins_output(void)
 // {
@@ -36,17 +39,15 @@ static void blink_test_led()
 //     while (1) {
 //         for (i = 0; i < sizeof(io_pins) / sizeof(io_pins[0]); i++) {
 //             io_set_output(io_pins[i], IO_OUT_HIGH);
-//             for (j = 10000; j > 0; j--) { }; // delay
+//             BUSY_WAIT_ms(80)
 //             io_set_output(io_pins[i], IO_OUT_LOW);
 //         }
 //     }
 // }
 // static void test_nucleo_board_io_pins_input(void)
 // {
-//     const struct io_config led_config = {
-//         .mode = IO_MODE_OUPUT, .pupd = IO_NO_PUPD, .speed = IO_SPEED_VERY_HIGH, .type =
-//         IO_TYPE_PP
-//     };
+//     test_setup();
+//     led_init();
 //     const struct io_config input_config = {
 //         .mode = IO_MODE_INPUT, .pupd = IO_PORT_PU, .speed = IO_SPEED_LOW, .type = IO_TYPE_PP
 //     };
@@ -65,7 +66,7 @@ static void blink_test_led()
 //                              IO_IR_REMOTE,         IO_TEST_LED };
 //     for (i = 0; i < sizeof(io_pins) / sizeof(io_pins[0]); i++) {
 //         if (io_pins[i] == IO_TEST_LED) { // pin for nucleo board onboard led
-//             io_configure(io_pins[i], &led_config);
+//             continue;
 //         } else {
 //             io_configure(io_pins[i], &input_config);
 //         }
@@ -75,23 +76,23 @@ static void blink_test_led()
 //         if (io_pins[i] == IO_TEST_LED) { // pin for nucleo board onboard led
 //             continue;
 //         }
-//         io_set_output(IO_TEST_LED, IO_OUT_HIGH);
+//         led_set(LED_TEST, LED_STATE_ON);
 //         // Wait for user to connect pull down to escape the loop
 //         while (io_get_input(io_pins[i]) == IO_IN_HIGH) {
-//             for (j = 10000; j > 0; j--) { }; // delay
+//             BUSY_WAIT_ms(80)
 //         }
-//         io_set_output(IO_TEST_LED, IO_OUT_LOW);
+//         led_set(LED_TEST, LED_STATE_OFF);
 //         // wait for user to disconnect pulldown for pin to go HIGH again and leave the loop
 //         while (io_get_input(io_pins[i]) == IO_IN_LOW) {
-//             for (j = 10000; j > 0; j--) { }; // delay
+//              BUSY_WAIT_ms(80)
 //         }
 //     }
 //     // led flashes after all input pins are tested in order
 //     while (1) {
-//         io_set_output(IO_TEST_LED, IO_OUT_HIGH);
-//         for (j = 10000; j > 0; j--) { }; // delay
-//         io_set_output(IO_TEST_LED, IO_OUT_LOW);
-//         for (j = 200000; j > 0; j--) { }; // delay
+//         led_set(LED_TEST, LED_STATE_ON);
+//         BUSY_WAIT_ms(80)
+//         led_set(LED_TEST, LED_STATE_OFF);
+//         BUSY_WAIT_ms(80)
 //     }
 // }
 int main(void)

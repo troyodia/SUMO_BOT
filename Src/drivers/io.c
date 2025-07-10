@@ -2,17 +2,26 @@
 #include "../common/defines.h"
 #include "stdint.h"
 #include "stm32l4xx.h"
+#include <assert.h>
 
 /*
 - Use the bit pattern of the port enums assigned to the
 io_e pins to get their port and pin numbers
 - The pin number is represented by the last 4 bits of the bits (15 is the largest pin no)
 - The port number is represented by the 4 bits directly before the 4 pin bits
+- Enums are represented as 8 bytes using compiler flag -fshort-enums
 */
 #define IO_PORT_OFFSET (4U)
 #define IO_PORT_MASK (0xFu << IO_PORT_OFFSET)
 #define IO_PIN_MASK (0xFu)
-
+// To get rid of error squiggles since vscode intellisense thinks enums are 4bytes
+#if defined(__INTELLISENSE__)
+_Static_assert(sizeof(io_ports_e) == 4, "IntelliSense only: workaround");
+#else
+static_assert(sizeof(io_ports_e) == 1,
+              "Unexpected enum size"
+              "-fshort-enums missing?");
+#endif
 #define IO_PORT_CNT (3U)
 #define IO_PIN_CNT (48U)
 

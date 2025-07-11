@@ -1,9 +1,24 @@
 .PHONY: all clean flash cppcheck format
+#check arguments
+ifneq ($(TEST),) 
+ifeq ($(findstring test_, $(TEST)),)
+$(error "TEST=$(TEST) is not a vaild test name, test must start with test_")
+else
+TARGET_NAME=$(TEST)
+endif 
+else
+TARGET_NAME=SUMO_ROBOT
+endif
 ######################################
 # target
 ######################################
-TARGET = SUMO_ROBOT
+# TARGET = SUMO_ROBOT
+TARGET = $(TARGET_NAME)
 
+#defines
+TEST_DEFINE=$(addprefix -DTEST=, $(TEST))
+DEFINES= \
+	$(TEST_DEFINE)
 
 ######################################
 # building variables
@@ -19,8 +34,8 @@ OPT = -Og
 #######################################
 # Build path
 BUILD_DIR = build
-OBJ_DIR = $(BUILD_DIR)/obj
-BIN_DIR = $(BUILD_DIR)/bin
+OBJ_DIR = $(BUILD_DIR)/obj/$(TARGET)
+BIN_DIR = $(BUILD_DIR)/bin/$(TARGET)
 CPPCHECK = cppcheck 
 FORMAT = clang-format
 CPPCHECK_INCLUDES = \
@@ -44,15 +59,6 @@ CPPCHECK_FLAGS = \
 # source
 ######################################
 # C sources
-C_SOURCES =  \
-	Src/main.c \
-	Src/app/drive.c \
-	Src/app/enemy.c \
-	Src/drivers/io.c \
-	Src/drivers/mcu_init.c \
-	Src/drivers/led.c \
-	Src/common/assert_handler.c \
-	Src/system_stm32l4xx.c \
 
 C_SOURCES_WITH_HEADERS = \
 	Src/app/drive.c \
@@ -62,9 +68,30 @@ C_SOURCES_WITH_HEADERS = \
 	Src/drivers/led.c \
 	Src/common/assert_handler.c \
 
+ifndef TEST
+C_SOURCES =  \
+	Src/main.c \
+	$(C_SOURCES_WITH_HEADERS) \
+	Src/system_stm32l4xx.c \
+
 CPP_CHECK_C_SOURCES =  \
 	Src/main.c \
 	$(C_SOURCES_WITH_HEADERS) \
+
+else
+#delete test.o before new build to ensure new test is always built
+$(shell rm -rf $(OBJ_DIR)/Src/test/test.o)
+
+C_SOURCES =  \
+	Src/test/test.c \
+	$(C_SOURCES_WITH_HEADERS) \
+	Src/system_stm32l4xx.c \
+
+CPP_CHECK_C_SOURCES =  \
+	Src/test/test.c \
+	$(C_SOURCES_WITH_HEADERS) \
+
+endif
 
 HEADERS = \
 	$(C_SOURCES_WITH_HEADERS:.c=.h) \
@@ -140,9 +167,9 @@ C_INCLUDES =  \
 
 
 # compile gcc flags
-ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(DEFINES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(addprefix -I,$(C_INCLUDES)) $(OPT) -fshort-enums -Wall -Wextra -Werror -fdata-sections -ffunction-sections
+CFLAGS += $(MCU) $(C_DEFS) $(addprefix -I,$(C_INCLUDES)) $(OPT) $(DEFINES) -fshort-enums -Wall -Wextra -Werror -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2

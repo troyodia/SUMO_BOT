@@ -189,11 +189,11 @@ void io_init(void)
     io_configure(IO_UNUSED_28, &io_unused_config);
     io_configure(IO_UNUSED_29, &io_unused_config);
 }
-static inline uint8_t io_get_port(io_e io)
+static uint8_t io_get_port(io_e io)
 {
     return (io & IO_PORT_MASK) >> IO_PORT_OFFSET;
 }
-static inline uint8_t io_get_pin_idx(io_e io)
+static uint8_t io_get_pin_idx(io_e io)
 {
     return (io & IO_PIN_MASK);
 }

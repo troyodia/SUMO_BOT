@@ -126,6 +126,7 @@ SZ = $(PREFIX)size
 endif
 # HEX = $(CP) -O ihex
 # BIN = $(CP) -O binary -S
+READELF=$(GCC_DIR)/$(PREFIX)readelf 
  
 #######################################
 # CFLAGS
@@ -219,7 +220,6 @@ $(OBJ_DIR)/%.o: %.S Makefile
 $(BIN_DIR)/$(TARGET).elf: $(OBJECTS) $(HEADERS) 
 	@mkdir -p $(dir $@)
 	$(CC) $(LDFLAGS) $^ -o $@
-	$(SZ) $@
 
 	
 #######################################
@@ -237,4 +237,10 @@ cppcheck:
 #######################################
 format:
 	@$(FORMAT) -i $(C_SOURCES) $(HEADERS)
+
+size: all
+	$(SZ) $(BIN_DIR)/$(TARGET).elf
+
+symbols: all
+	$(READELF) -s $(BIN_DIR)/$(TARGET).elf | sort -n -k3
 # *** EOF ***

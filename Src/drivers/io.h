@@ -155,6 +155,31 @@ typedef enum
     IO_TYPE_PP, // push pull
     IO_TYPE_OD // open drain
 } io_out_type_e;
+
+typedef enum
+{
+    IO_FALLING_TRIGGER,
+    IO_RISING_TRIGGER
+} io_trigger_e;
+/*Enum contains the 4 sections of the 16 bit EXTICRN register
+ * N represents the particular EXTI regsiter (1-4)*/
+typedef enum
+{
+    IO_EXTI_N_0,
+    IO_EXTI_N_1 = 4,
+    IO_EXTI_N_2 = 8,
+    IO_EXTI_N_3 = 12,
+} io_exti_section_e;
+typedef enum
+{
+    IO_EXTI_0_LINE,
+    IO_EXTI_1_LINE,
+    IO_EXTI_2_LINE,
+    IO_EXTI_3_LINE,
+    IO_EXTI_4_LINE,
+    IO_EXTI_9_5_LINE,
+    IO_EXTI_15_10_LINE,
+} io_exti_line_e;
 // STRUCT
 struct io_config
 {
@@ -169,11 +194,20 @@ void io_init(void);
 void io_configure(io_e io, const struct io_config *config);
 void io_get_io_config(io_e io, struct io_config *current_config);
 bool io_compare_io_config(const struct io_config *config1, const struct io_config *config2);
-void io_port_init(io_e io);
+void io_port_clock_init(io_e io);
 void io_set_mode(io_e io, io_mode_e mode);
 void io_set_output_type(io_e io, io_out_type_e type);
 void io_set_pupd(io_e io, io_pupd_e pupd);
 void io_set_output_speed(io_e io, io_ouput_speed_e speed);
 void io_set_output(io_e io, io_out_e out);
 io_in_e io_get_input(io_e io);
+
+typedef void (*isr_function)(void);
+void io_interrupt_clock_init(void);
+void io_interrupt_config(io_e io, isr_function isr, io_trigger_e trigger,
+                         io_exti_section_e exti_section);
+void io_deconfigure_interrupt(io_e io, io_trigger_e trigger, io_exti_section_e exti_section);
+void io_enable_interrupt(io_exti_line_e line);
+void io_disable_interrupt(io_exti_line_e line);
+
 #endif // IO_H

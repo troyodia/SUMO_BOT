@@ -24,8 +24,9 @@ static void test_assert(void)
     test_setup();
     ASSERT(0);
 }
+
 SUPPRESS_UNUSED
-static void test_blink_led()
+static void test_blink_led(void)
 {
     test_setup();
     led_init();
@@ -100,6 +101,39 @@ static void test_nucleo_board_io_pins_input(void)
             led_set(LED_TEST, LED_STATE_OFF);
         BUSY_WAIT_ms(80)
     }
+}
+
+SUPPRESS_UNUSED
+static void io_PA_8_isr(void)
+{
+    led_set(LED_TEST, LED_STATE_ON);
+}
+
+SUPPRESS_UNUSED
+static void io_PB_3_isr(void)
+{
+    led_set(LED_TEST, LED_STATE_OFF);
+}
+
+SUPPRESS_UNUSED
+static void test_io_interrupt(void)
+{
+    test_setup();
+    const struct io_config input_config = {
+        .mode = IO_MODE_INPUT, .pupd = IO_PORT_PU, .speed = IO_SPEED_LOW, .type = IO_TYPE_PP
+    };
+    io_configure((io_e)IO_PA_8, &input_config);
+    io_configure((io_e)IO_PB_3, &input_config);
+    led_init();
+
+    io_interrupt_config((io_e)IO_PB_3, io_PB_3_isr, IO_FALLING_TRIGGER, IO_EXTI_N_3);
+    io_enable_interrupt(IO_EXTI_3_LINE);
+    io_interrupt_config((io_e)IO_PA_8, io_PA_8_isr, IO_FALLING_TRIGGER, IO_EXTI_N_0);
+    io_enable_interrupt(IO_EXTI_9_5_LINE);
+
+    while (1)
+
+        ;
 }
 int main()
 {

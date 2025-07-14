@@ -1,8 +1,10 @@
 #include "io.h"
 #include "../common/defines.h"
-#include "stdint.h"
+#include "../common/assert_handler.h"
 #include "stm32l4xx.h"
+#include <stdint.h>
 #include <assert.h>
+#include <stddef.h>
 
 /*
 - Use the bit pattern of the port enums assigned to the
@@ -23,8 +25,9 @@ static_assert(sizeof(io_ports_e) == 1,
               "-fshort-enums missing?");
 #endif
 #define IO_PORT_CNT (3U)
+#define IO_PIN_PER_PORT_CNT (16U)
 #define IO_PIN_CNT (48U)
-
+#define IO_EXTI_INTERRUPT_LINES_CNT (7U)
 /* Array holds the initial config for each pin
  * Configure unused pins as input with pull down resistors
  * Configure the pin to prevent unpredictable noise for floating pins   */
@@ -197,14 +200,34 @@ static uint8_t io_get_pin_idx(io_e io)
 {
     return (io & IO_PIN_MASK);
 }
+typedef enum
+{
+    PORTA,
+    PORTB,
+    PORTC,
+} io_port_e;
 /*- Array of GPIO ports, the ports are defined as struct pointers in the header files
   - Used an array of the ports to allow for cleaner code and no switch statments
   - Added only 3 ports since only A,B and C are being used in the sumo bot*/
 static GPIO_TypeDef *const gpio_port_regs[IO_PORT_CNT] = { GPIOA, GPIOB, GPIOC };
 
+static isr_function isr_functions[IO_PORT_CNT][IO_PIN_PER_PORT_CNT] = {
+    [PORTA] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL },
+    [PORTB] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL },
+    [PORTC] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL },
+};
+static const IRQn_Type exti_interrupt_lines[IO_EXTI_INTERRUPT_LINES_CNT] = {
+    [IO_EXTI_0_LINE] = EXTI0_IRQn,         [IO_EXTI_1_LINE] = EXTI1_IRQn,
+    [IO_EXTI_2_LINE] = EXTI2_IRQn,         [IO_EXTI_3_LINE] = EXTI3_IRQn,
+    [IO_EXTI_4_LINE] = EXTI4_IRQn,         [IO_EXTI_9_5_LINE] = EXTI9_5_IRQn,
+    [IO_EXTI_15_10_LINE] = EXTI15_10_IRQn,
+};
 void io_configure(io_e io, const struct io_config *config)
 {
-    io_port_init(io);
+    io_port_clock_init(io);
     io_set_mode(io, config->mode);
     io_set_output_type(io, config->type);
     io_set_pupd(io, config->pupd); // no pupd for output
@@ -224,7 +247,7 @@ void io_configure(io_e io, const struct io_config *config)
         break;
     }
 }
-void io_port_init(io_e io)
+void io_port_clock_init(io_e io)
 {
     const uint8_t port = io_get_port(io);
 
@@ -329,3 +352,155 @@ bool io_compare_io_config(const struct io_config *config1, const struct io_confi
     }
     return true;
 };
+void io_interrupt_clock_init(void)
+{
+    RCC->APB2ENR |= 0x1;
+}
+static void io_set_interrupt_trigger(io_e io, io_trigger_e trigger)
+{
+    const uint8_t pin = io_get_pin_idx(io);
+
+    switch (trigger) {
+    case IO_FALLING_TRIGGER:
+        EXTI->FTSR1 |= (0x1 << pin);
+        EXTI->RTSR1 &= ~(0x1 << pin);
+        break;
+    case IO_RISING_TRIGGER:
+        EXTI->RTSR1 |= (0x1 << pin);
+        EXTI->FTSR1 &= ~(0x1 << pin);
+        break;
+    }
+}
+static void io_register_isr(io_e io, isr_function isr)
+{
+    const uint8_t pin = io_get_pin_idx(io);
+    const uint8_t port = io_get_port(io);
+    ASSERT(isr_functions[port][pin] == NULL);
+    isr_functions[port][pin] = isr;
+}
+void io_interrupt_config(io_e io, isr_function isr, io_trigger_e trigger,
+                         io_exti_section_e exti_section)
+{
+    io_interrupt_clock_init();
+    const uint8_t pin = io_get_pin_idx(io);
+    const uint8_t port = io_get_port(io);
+    int exti = pin / 4;
+    SYSCFG->EXTICR[exti] &= ~(0xF << exti_section);
+    SYSCFG->EXTICR[exti] |= (port << exti_section);
+
+    EXTI->IMR1 |= (0x1 << pin);
+    io_set_interrupt_trigger(io, trigger);
+    io_register_isr(io, isr);
+}
+
+static inline void io_unregister_isr(io_e io)
+{
+    const uint8_t pin = io_get_pin_idx(io);
+    const uint8_t port = io_get_port(io);
+    isr_functions[port][pin] = NULL;
+}
+static void io_unset_interrupt_trigger(io_e io, io_trigger_e trigger)
+{
+    const uint8_t pin = io_get_pin_idx(io);
+
+    switch (trigger) {
+    case IO_FALLING_TRIGGER:
+        EXTI->FTSR1 &= ~(0x1 << pin);
+        break;
+    case IO_RISING_TRIGGER:
+        EXTI->RTSR1 &= ~(0x1 << pin);
+        break;
+    }
+}
+void io_deconfigure_interrupt(io_e io, io_trigger_e trigger, io_exti_section_e exti_section)
+{
+    const uint8_t pin = io_get_pin_idx(io);
+    const uint8_t port = io_get_port(io);
+    uint8_t exti = port / 4;
+    SYSCFG->EXTICR[exti] &= ~(0xF << exti_section);
+
+    EXTI->IMR1 &= ~(0x1 << pin);
+    io_unset_interrupt_trigger(io, trigger);
+    io_unregister_isr(io);
+}
+void io_enable_interrupt(io_exti_line_e line)
+{
+    __disable_irq();
+    // NVIC_SetPriority(EXTI15_10_IRQn,1);
+    NVIC_EnableIRQ(exti_interrupt_lines[line]);
+    __enable_irq();
+}
+void io_disable_interrupt(io_exti_line_e line)
+{
+    __disable_irq();
+    NVIC_DisableIRQ(exti_interrupt_lines[line]);
+    __enable_irq();
+}
+static void io_isr(io_e io)
+{
+    const uint8_t pin = io_get_pin_idx(io);
+    const uint8_t port = io_get_port(io);
+    if (EXTI->PR1 & (0x1 << pin)) {
+        EXTI->PR1 |= (0x1 << pin); // clear the PR1 flag for the EXTI line
+        if (isr_functions[port][pin] != NULL) {
+            isr_functions[port][pin]();
+        }
+    }
+}
+
+void EXTI0_IRQHandler(void)
+{
+    io_isr((io_e)IO_PA_0);
+    io_isr((io_e)IO_PB_0);
+    io_isr((io_e)IO_PC_0);
+}
+void EXTI1_IRQHandler(void)
+{
+    io_isr((io_e)IO_PA_1);
+    io_isr((io_e)IO_PB_1);
+    io_isr((io_e)IO_PC_1);
+}
+void EXTI2_IRQHandler(void)
+{
+    io_isr((io_e)IO_PA_2);
+    io_isr((io_e)IO_PB_2);
+    io_isr((io_e)IO_PC_2);
+}
+void EXTI3_IRQHandler(void)
+{
+    io_isr((io_e)IO_PA_3);
+    io_isr((io_e)IO_PB_3);
+    io_isr((io_e)IO_PC_3);
+}
+void EXTI4_IRQHandler(void)
+{
+    io_isr((io_e)IO_PA_4);
+    io_isr((io_e)IO_PB_4);
+    io_isr((io_e)IO_PC_4);
+}
+void EXTI9_5_IRQHandler(void)
+{
+    io_ports_e io;
+    for (io = IO_PA_5; io <= IO_PA_9; io++) {
+        io_isr((io_e)io);
+    }
+    for (io = IO_PB_5; io <= IO_PB_9; io++) {
+        io_isr((io_e)io);
+    }
+    for (io = IO_PC_5; io <= IO_PC_9; io++) {
+        io_isr((io_e)io);
+    }
+}
+void EXTI15_10_IRQHandler(void)
+{
+    io_ports_e io;
+    for (io = IO_PA_10; io <= IO_PA_15; io++) {
+        io_isr((io_e)io);
+    }
+    for (io = IO_PB_10; io <= IO_PB_15; io++) {
+        io_isr((io_e)io);
+    }
+    for (io = IO_PC_10; io <= IO_PC_15; io++) {
+        io_isr((io_e)io);
+    }
+}

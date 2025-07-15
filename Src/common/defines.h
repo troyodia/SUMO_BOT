@@ -5,8 +5,10 @@
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
 
 // STM32L3 runs at default 4MHz
-#define CLOCK_FREQ_4MZ (4000000U)
-#define CLOCK_FREQ_PER_ms (CLOCK_FREQ_4MZ / 1000U)
+// switched to 80Mhz using HSI and PLL clocks
+#define CLOCK_FREQ_1MHZ (1000000U)
+#define CLOCK_FREQ_80MHZ (80U * CLOCK_FREQ_1MHZ)
+#define CLOCK_FREQ_PER_ms (CLOCK_FREQ_80MHZ / 1000U)
 #define BUSY_WAIT_ms(delay_ms)                                                                     \
     for (j = (delay_ms * CLOCK_FREQ_PER_ms); j > 0; j--) {                                         \
     }; // takes the count for how long you want to delay

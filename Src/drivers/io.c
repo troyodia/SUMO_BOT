@@ -24,7 +24,8 @@ static_assert(sizeof(io_ports_e) == 1,
               "Unexpected enum size"
               "-fshort-enums missing?");
 #endif
-#define IO_PORT_CNT (3U)
+#define IO_PORT_CNT (8U)
+#define IO_PORT_CNT_ISR (3U)
 #define IO_PIN_PER_PORT_CNT (16U)
 #define IO_PIN_CNT (48U)
 #define IO_EXTI_INTERRUPT_LINES_CNT (7U)
@@ -33,7 +34,7 @@ static_assert(sizeof(io_ports_e) == 1,
  * Configure the pin to prevent unpredictable noise for floating pins   */
 #define UNUSED_PIN_CONFIG                                                                          \
     {                                                                                              \
-        IO_MODE_INPUT, IO_PORT_PD, IO_SPEED_LOW, IO_TYPE_PP                                        \
+        IO_MODE_INPUT, IO_PORT_PD, IO_SPEED_LOW, IO_TYPE_PP, IO_AF_NONE                            \
     }
 
 static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
@@ -41,58 +42,62 @@ static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
     [IO_LD_FRONT_LEFT] = { .mode = IO_MODE_ANALOG,
                            .pupd = IO_NO_PUPD,
                            .speed = IO_SPEED_LOW,
-                           .type = IO_TYPE_PP },
+                           .type = IO_TYPE_PP,
+                           .af = IO_AF_NONE },
     [IO_LD_BACK_LEFT] = { .mode = IO_MODE_ANALOG,
                           .pupd = IO_NO_PUPD,
                           .speed = IO_SPEED_LOW,
-                          .type = IO_TYPE_PP },
+                          .type = IO_TYPE_PP,
+                          .af = IO_AF_NONE },
     [IO_LD_FRONT_RIGHT] = { .mode = IO_MODE_ANALOG,
                             .pupd = IO_NO_PUPD,
                             .speed = IO_SPEED_LOW,
-                            .type = IO_TYPE_PP },
+                            .type = IO_TYPE_PP,
+                            .af = IO_AF_NONE },
     [IO_LD_BACK_RIGHT] = { .mode = IO_MODE_ANALOG,
                            .pupd = IO_NO_PUPD,
                            .speed = IO_SPEED_LOW,
-                           .type = IO_TYPE_PP },
-    [IO_UNUSED_1] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_2] = UNUSED_PIN_CONFIG,
+                           .type = IO_TYPE_PP,
+                           .af = IO_AF_NONE },
     // test led setup as an output, held low initiailly
     [IO_TEST_LED] = { .mode = IO_MODE_OUPUT,
                       .pupd = IO_NO_PUPD,
                       .speed = IO_SPEED_VERY_HIGH,
-                      .type = IO_TYPE_PP },
+                      .type = IO_TYPE_PP,
+                      .af = IO_AF_NONE },
     /* Range sensor xshut set up as outputs*/
     [IO_XSHUT_FRONT_LEFT] = { .mode = IO_MODE_OUPUT,
                               .pupd = IO_NO_PUPD,
                               .speed = IO_SPEED_VERY_HIGH,
-                              .type = IO_TYPE_PP },
+                              .type = IO_TYPE_PP,
+                              .af = IO_AF_NONE },
     [IO_XSHUT_FRONT_RIGHT] = { .mode = IO_MODE_OUPUT,
                                .pupd = IO_NO_PUPD,
                                .speed = IO_SPEED_VERY_HIGH,
-                               .type = IO_TYPE_PP },
+                               .type = IO_TYPE_PP,
+                               .af = IO_AF_NONE },
     [IO_XSHUT_RIGHT] = { .mode = IO_MODE_OUPUT,
                          .pupd = IO_NO_PUPD,
                          .speed = IO_SPEED_VERY_HIGH,
-                         .type = IO_TYPE_PP },
+                         .type = IO_TYPE_PP,
+                         .af = IO_AF_NONE },
     [IO_XSHUT_LEFT] = { .mode = IO_MODE_OUPUT,
                         .pupd = IO_NO_PUPD,
                         .speed = IO_SPEED_VERY_HIGH,
-                        .type = IO_TYPE_PP },
+                        .type = IO_TYPE_PP,
+                        .af = IO_AF_NONE },
     [IO_XSHUT_FRONT] = { .mode = IO_MODE_OUPUT,
                          .pupd = IO_NO_PUPD,
                          .speed = IO_SPEED_VERY_HIGH,
-                         .type = IO_TYPE_PP },
+                         .type = IO_TYPE_PP,
+                         .af = IO_AF_NONE },
     // IR reciever setup as an input
     [IO_IR_REMOTE] = { .mode = IO_MODE_INPUT,
                        .pupd = IO_NO_PUPD,
                        .speed = IO_SPEED_LOW,
-                       .type = IO_TYPE_PP },
-    [IO_UNUSED_3] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_4] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_5] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_6] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_7] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_8] = UNUSED_PIN_CONFIG,
+                       .type = IO_TYPE_PP,
+                       .af = IO_AF_NONE },
+
     /* Range sensor interrupt output open drain
      * A 10k ohm external pull up resistor is suggested but the microcontrollers internal pull up
      is
@@ -100,48 +105,46 @@ static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
     [IO_RANGE_SENSOR_INT_FRONT] = { .mode = IO_MODE_INPUT,
                                     .pupd = IO_PORT_PU,
                                     .speed = IO_SPEED_LOW,
-                                    .type = IO_TYPE_PP },
-    [IO_UNUSED_9] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_10] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_11] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_12] = UNUSED_PIN_CONFIG,
-
+                                    .type = IO_TYPE_PP,
+                                    .af = IO_AF_NONE },
     /* uart transmit
      * mode: alternate function
      * pupd: no pupd (output not required)*/
     [IO_UART_TX] = { .mode = IO_MODE_ALTFN,
                      .pupd = IO_NO_PUPD,
                      .speed = IO_SPEED_HIGH,
-                     .type = IO_TYPE_PP },
+                     .type = IO_TYPE_PP,
+                     .af = IO_AF_7 },
     /* uart recieve
      * mode: alternate function
      * pupd: pulled down*/
     [IO_UART_RX] = { .mode = IO_MODE_ALTFN,
                      .pupd = IO_PORT_PD,
                      .speed = IO_SPEED_LOW,
-                     .type = IO_TYPE_PP },
-    [IO_UNUSED_13] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_14] = UNUSED_PIN_CONFIG,
+                     .type = IO_TYPE_PP,
+                     .af = IO_AF_7 },
 
     // motor channel pins setup as output +
     [IO_MOTOR_LEFT_CH1] = { .mode = IO_MODE_OUPUT,
                             .pupd = IO_NO_PUPD,
                             .speed = IO_SPEED_VERY_HIGH,
-                            .type = IO_TYPE_PP },
+                            .type = IO_TYPE_PP,
+                            .af = IO_AF_NONE },
     [IO_MOTOR_LEFT_CH2] = { .mode = IO_MODE_OUPUT,
                             .pupd = IO_NO_PUPD,
                             .speed = IO_SPEED_VERY_HIGH,
-                            .type = IO_TYPE_PP },
+                            .type = IO_TYPE_PP,
+                            .af = IO_AF_NONE },
     [IO_MOTOR_RIGHT_CH1] = { .mode = IO_MODE_OUPUT,
                              .pupd = IO_NO_PUPD,
                              .speed = IO_SPEED_VERY_HIGH,
-                             .type = IO_TYPE_PP },
+                             .type = IO_TYPE_PP,
+                             .af = IO_AF_NONE },
     [IO_MOTOR_RIGHT_CH2] = { .mode = IO_MODE_OUPUT,
                              .pupd = IO_NO_PUPD,
                              .speed = IO_SPEED_VERY_HIGH,
-                             .type = IO_TYPE_PP },
-    [IO_UNUSED_15] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_16] = UNUSED_PIN_CONFIG,
+                             .type = IO_TYPE_PP,
+                             .af = IO_AF_NONE },
 
     /* I2C pins
      * mode = alternate function
@@ -150,22 +153,43 @@ static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
     [IO_I2C_SCL] = { .mode = IO_MODE_ALTFN,
                      .pupd = IO_NO_PUPD,
                      .speed = IO_SPEED_VERY_HIGH,
-                     .type = IO_TYPE_OD },
+                     .type = IO_TYPE_OD,
+                     .af = IO_AF_4 },
     [IO_I2C_SDA] = { .mode = IO_MODE_ALTFN,
                      .pupd = IO_NO_PUPD,
                      .speed = IO_SPEED_VERY_HIGH,
-                     .type = IO_TYPE_OD },
-    [IO_UNUSED_17] = UNUSED_PIN_CONFIG,
-    [IO_UNUSED_18] = UNUSED_PIN_CONFIG,
+                     .type = IO_TYPE_OD,
+                     .af = IO_AF_4 },
+
     // motor pwm pins set up as alternate function
     [IO_MOTOR_PWM_LEFT] = { .mode = IO_MODE_ALTFN,
                             .pupd = IO_NO_PUPD,
                             .speed = IO_SPEED_VERY_HIGH,
-                            .type = IO_TYPE_PP },
+                            .type = IO_TYPE_PP,
+                            .af = IO_AF_NONE },
     [IO_MOTOR_PWM_RIGHT] = { .mode = IO_MODE_ALTFN,
                              .pupd = IO_NO_PUPD,
                              .speed = IO_SPEED_VERY_HIGH,
-                             .type = IO_TYPE_PP },
+                             .type = IO_TYPE_PP,
+                             .af = IO_AF_NONE },
+    [IO_UNUSED_1] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_2] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_3] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_4] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_5] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_6] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_7] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_8] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_9] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_10] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_11] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_12] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_13] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_14] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_15] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_16] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_17] = UNUSED_PIN_CONFIG,
+    [IO_UNUSED_18] = UNUSED_PIN_CONFIG,
     [IO_UNUSED_19] = UNUSED_PIN_CONFIG,
     [IO_UNUSED_20] = UNUSED_PIN_CONFIG,
     [IO_UNUSED_21] = UNUSED_PIN_CONFIG,
@@ -179,10 +203,11 @@ static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
 void io_init(void)
 {
     io_e io_pin;
-    const struct io_config io_unused_config = UNUSED_PIN_CONFIG;
+    const struct io_config io_unused_config = { IO_MODE_INPUT, IO_PORT_PD, IO_SPEED_LOW, IO_TYPE_PP,
+                                                IO_AF_NONE };
 
     for (io_pin = (io_e)IO_PA_0; io_pin < ARRAY_SIZE(io_pins_initial_configs); io_pin++) {
-        if (io_pin == IO_UNUSED_6 || io_pin == IO_UNUSED_7) {
+        if (io_pin == IO_UNUSED_4 || io_pin == IO_UNUSED_5) {
             continue;
         }
         io_configure(io_pin, &io_pins_initial_configs[io_pin]);
@@ -209,9 +234,10 @@ typedef enum
 /*- Array of GPIO ports, the ports are defined as struct pointers in the header files
   - Used an array of the ports to allow for cleaner code and no switch statments
   - Added only 3 ports since only A,B and C are being used in the sumo bot*/
-static GPIO_TypeDef *const gpio_port_regs[IO_PORT_CNT] = { GPIOA, GPIOB, GPIOC };
+static GPIO_TypeDef *const gpio_port_regs[IO_PORT_CNT] = { GPIOA, GPIOB, GPIOC, GPIOD,
+                                                           GPIOE, GPIOF, GPIOG, GPIOH };
 
-static isr_function isr_functions[IO_PORT_CNT][IO_PIN_PER_PORT_CNT] = {
+static isr_function isr_functions[IO_PORT_CNT_ISR][IO_PIN_PER_PORT_CNT] = {
     [PORTA] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                 NULL, NULL },
     [PORTB] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -241,6 +267,7 @@ void io_configure(io_e io, const struct io_config *config)
 
     case IO_MODE_ALTFN:
         io_set_output_speed(io, config->speed);
+        io_set_AF(io, config->af);
         break;
 
     case IO_MODE_ANALOG:
@@ -324,6 +351,15 @@ io_in_e io_get_input(io_e io)
     const GPIO_TypeDef *GPIO = gpio_port_regs[port];
     const uint8_t input = GPIO->IDR & (0x1 << pin);
     return input ? IO_IN_HIGH : IO_IN_LOW;
+}
+void io_set_AF(io_e io, io_af_e af)
+{
+    const uint8_t pin = io_get_pin_idx(io);
+    const uint8_t port = io_get_port(io);
+    GPIO_TypeDef *GPIO = gpio_port_regs[port];
+    uint8_t af_section = pin / 8;
+    GPIO->AFR[af_section] &= ~(0xF << (pin * 4));
+    GPIO->AFR[af_section] |= (af << (pin * 4));
 }
 void io_get_io_config(io_e io, struct io_config *current_config)
 {

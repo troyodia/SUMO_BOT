@@ -4,9 +4,11 @@
 #include "io.h"
 #include "stdbool.h"
 static bool initialized = false;
-static const struct io_config led_config = {
-    .mode = IO_MODE_OUPUT, .pupd = IO_NO_PUPD, .speed = IO_SPEED_VERY_HIGH, .type = IO_TYPE_PP
-};
+static const struct io_config led_config = { .mode = IO_MODE_OUPUT,
+                                             .pupd = IO_NO_PUPD,
+                                             .speed = IO_SPEED_VERY_HIGH,
+                                             .type = IO_TYPE_PP,
+                                             .af = IO_AF_NONE };
 void led_init(void)
 {
     /* First assert that led_init has not been called yet

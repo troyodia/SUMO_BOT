@@ -66,6 +66,8 @@ C_SOURCES_WITH_HEADERS = \
 	Src/drivers/io.c \
 	Src/drivers/mcu_init.c \
 	Src/drivers/led.c \
+	Src/drivers/uart.c \
+	Src/common/ring_buffer.c \
 	Src/common/assert_handler.c \
 
 ifndef TEST

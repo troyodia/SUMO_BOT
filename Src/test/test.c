@@ -3,6 +3,7 @@
 #include "../common/assert_handler.h"
 #include "../drivers/led.h"
 #include "../common/defines.h"
+#include "../drivers/uart.h"
 static const io_e io_pins[] = { IO_I2C_SDA,           IO_I2C_SCL,
                                 IO_LD_FRONT_LEFT,     IO_LD_BACK_LEFT,
                                 IO_UART_TX,           IO_UART_RX,
@@ -39,13 +40,26 @@ static void test_blink_led(void)
     }
 }
 SUPPRESS_UNUSED
+static void test_uart_interrupt(void)
+{
+    test_setup();
+    uart_init();
+    volatile int j;
+    while (1) {
+        uart_print_interrupt("hello boy\n");
+        BUSY_WAIT_ms(60);
+    }
+}
+SUPPRESS_UNUSED
 static void test_nucleo_board_io_pins_output(void)
 {
     test_setup();
 
-    const struct io_config output_config = {
-        .mode = IO_MODE_OUPUT, .pupd = IO_NO_PUPD, .speed = IO_SPEED_VERY_HIGH, .type = IO_TYPE_PP
-    };
+    const struct io_config output_config = { .mode = IO_MODE_OUPUT,
+                                             .pupd = IO_NO_PUPD,
+                                             .speed = IO_SPEED_VERY_HIGH,
+                                             .type = IO_TYPE_PP,
+                                             .af = IO_AF_NONE };
     volatile unsigned int i;
     volatile unsigned int j;
     for (i = 0; i < sizeof(io_pins) / sizeof(io_pins[0]); i++) {
@@ -64,9 +78,11 @@ static void test_nucleo_board_io_pins_input(void)
     test_setup();
     led_init();
 
-    const struct io_config input_config = {
-        .mode = IO_MODE_INPUT, .pupd = IO_PORT_PU, .speed = IO_SPEED_LOW, .type = IO_TYPE_PP
-    };
+    const struct io_config input_config = { .mode = IO_MODE_INPUT,
+                                            .pupd = IO_PORT_PU,
+                                            .speed = IO_SPEED_LOW,
+                                            .type = IO_TYPE_PP,
+                                            .af = IO_AF_NONE };
     volatile unsigned int i;
     volatile unsigned int j;
 
@@ -119,9 +135,11 @@ SUPPRESS_UNUSED
 static void test_io_interrupt(void)
 {
     test_setup();
-    const struct io_config input_config = {
-        .mode = IO_MODE_INPUT, .pupd = IO_PORT_PU, .speed = IO_SPEED_LOW, .type = IO_TYPE_PP
-    };
+    const struct io_config input_config = { .mode = IO_MODE_INPUT,
+                                            .pupd = IO_PORT_PU,
+                                            .speed = IO_SPEED_LOW,
+                                            .type = IO_TYPE_PP,
+                                            .af = IO_AF_NONE };
     io_configure((io_e)IO_PA_8, &input_config);
     io_configure((io_e)IO_PB_3, &input_config);
     led_init();

@@ -61,29 +61,31 @@ typedef enum
     // PA
     IO_LD_FRONT_LEFT = IO_PA_0,
     IO_LD_BACK_LEFT = IO_PA_1,
-    IO_UNUSED_1 = IO_PA_2,
-    IO_UNUSED_2 = IO_PA_3,
+    // IO_UNUSED_1 = IO_PA_2,
+    // IO_UNUSED_2 = IO_PA_3,
+    IO_UART_TX = IO_PA_2,
+    IO_UART_RX = IO_PA_3,
     IO_LD_FRONT_RIGHT = IO_PA_4,
     IO_TEST_LED = IO_PA_5,
     IO_XSHUT_FRONT_LEFT = IO_PA_6,
     IO_XSHUT_RIGHT = IO_PA_7,
     IO_IR_REMOTE = IO_PA_8,
     IO_XSHUT_LEFT = IO_PA_9,
-    IO_UNUSED_3 = IO_PA_10,
-    IO_UNUSED_4 = IO_PA_11,
-    IO_UNUSED_5 = IO_PA_12,
-    IO_UNUSED_6 = IO_PA_13,
-    IO_UNUSED_7 = IO_PA_14,
-    IO_UNUSED_8 = IO_PA_15,
+    IO_UNUSED_1 = IO_PA_10,
+    IO_UNUSED_2 = IO_PA_11,
+    IO_UNUSED_3 = IO_PA_12,
+    IO_UNUSED_4 = IO_PA_13,
+    IO_UNUSED_5 = IO_PA_14,
+    IO_UNUSED_6 = IO_PA_15,
     // PB
     IO_LD_BACK_RIGHT = IO_PB_0,
     IO_RANGE_SENSOR_INT_FRONT = IO_PB_1,
-    IO_UNUSED_9 = IO_PB_2,
-    IO_UNUSED_10 = IO_PB_3,
-    IO_UNUSED_11 = IO_PB_4,
-    IO_UNUSED_12 = IO_PB_5,
-    IO_UART_TX = IO_PB_6,
-    IO_UART_RX = IO_PB_7,
+    IO_UNUSED_7 = IO_PB_2,
+    IO_UNUSED_8 = IO_PB_3,
+    IO_UNUSED_9 = IO_PB_4,
+    IO_UNUSED_10 = IO_PB_5,
+    IO_UNUSED_11 = IO_PB_6,
+    IO_UNUSED_12 = IO_PB_7,
     IO_UNUSED_13 = IO_PB_8,
     IO_UNUSED_14 = IO_PB_9,
     IO_MOTOR_LEFT_CH1 = IO_PB_10,
@@ -155,7 +157,26 @@ typedef enum
     IO_TYPE_PP, // push pull
     IO_TYPE_OD // open drain
 } io_out_type_e;
-
+typedef enum
+{
+    IO_AF_0,
+    IO_AF_1,
+    IO_AF_2,
+    IO_AF_3,
+    IO_AF_4,
+    IO_AF_5,
+    IO_AF_6,
+    IO_AF_7,
+    IO_AF_8,
+    IO_AF_9,
+    IO_AF_10,
+    IO_AF_11,
+    IO_AF_12,
+    IO_AF_13,
+    IO_AF_14,
+    IO_AF_15,
+    IO_AF_NONE
+} io_af_e;
 typedef enum
 {
     IO_FALLING_TRIGGER,
@@ -187,6 +208,7 @@ struct io_config
     io_pupd_e pupd;
     io_ouput_speed_e speed;
     io_out_type_e type;
+    io_af_e af;
 };
 
 // FUNCTIONS
@@ -199,6 +221,7 @@ void io_set_mode(io_e io, io_mode_e mode);
 void io_set_output_type(io_e io, io_out_type_e type);
 void io_set_pupd(io_e io, io_pupd_e pupd);
 void io_set_output_speed(io_e io, io_ouput_speed_e speed);
+void io_set_AF(io_e io, io_af_e af);
 void io_set_output(io_e io, io_out_e out);
 io_in_e io_get_input(io_e io);
 

@@ -115,6 +115,7 @@ static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
                      .speed = IO_SPEED_HIGH,
                      .type = IO_TYPE_PP,
                      .af = IO_AF_7 },
+
     /* uart recieve
      * mode: alternate function
      * pupd: pulled down*/
@@ -207,7 +208,7 @@ void io_init(void)
                                                 IO_AF_NONE };
 
     for (io_pin = (io_e)IO_PA_0; io_pin < ARRAY_SIZE(io_pins_initial_configs); io_pin++) {
-        if (io_pin == IO_UNUSED_4 || io_pin == IO_UNUSED_5) {
+        if (io_pin == IO_UNUSED_6 || io_pin == IO_UNUSED_7) {
             continue;
         }
         io_configure(io_pin, &io_pins_initial_configs[io_pin]);
@@ -356,10 +357,16 @@ void io_set_AF(io_e io, io_af_e af)
 {
     const uint8_t pin = io_get_pin_idx(io);
     const uint8_t port = io_get_port(io);
+    uint8_t pin_idx = pin;
     GPIO_TypeDef *GPIO = gpio_port_regs[port];
     uint8_t af_section = pin / 8;
-    GPIO->AFR[af_section] &= ~(0xF << (pin * 4));
-    GPIO->AFR[af_section] |= (af << (pin * 4));
+    /* To account for the AFRH of the AF register, counts up from bit 8
+     * Could use modulu but need to conserve memory*/
+    if (pin > 7) {
+        pin_idx = pin - 8;
+    }
+    GPIO->AFR[af_section] &= ~(0xF << (pin_idx * 4));
+    GPIO->AFR[af_section] |= (af << (pin_idx * 4));
 }
 void io_get_io_config(io_e io, struct io_config *current_config)
 {

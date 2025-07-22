@@ -17,9 +17,10 @@ TARGET = $(TARGET_NAME)
 
 #defines
 TEST_DEFINE=$(addprefix -DTEST=, $(TEST))
+PRINTF_CONFIG_DEFINE=$(addprefix -D, $(PRINTF_INCLUDE_CONFIG_H))
 DEFINES= \
-	$(TEST_DEFINE)
-
+	$(TEST_DEFINE) \
+	$(PRINTF_CONFIG_DEFINE) \
 ######################################
 # building variables
 ######################################
@@ -42,8 +43,14 @@ CPPCHECK_INCLUDES = \
 	./Src/app \
 	./Src/common \
 	./Src/drivers \
-	./Src/test
+	./Src/test \
 
+IGNORE_FILES_FORMAT_CPPCHECK = \
+	external/printf/printf.c \
+	external/printf/printf.h
+
+SOURCES_FORMAT_CPPCHECK = $(filter-out $(IGNORE_FILES_FORMAT_CPPCHECK), $(CPP_CHECK_C_SOURCES))
+HEADERS_FORMAT_CPPCHECK = $(filter-out $(IGNORE_FILES_FORMAT_CPPCHECK), $(HEADERS))
 
 CPPCHECK_FLAGS = \
 	--quiet --enable=all --error-exitcode=1 \
@@ -53,7 +60,6 @@ CPPCHECK_FLAGS = \
 	--suppress=unmatchedSuppression \
 	--suppress=unusedFunction \
 	$(addprefix -I,$(CPPCHECK_INCLUDES)) 	
-
 
 ######################################
 # source
@@ -69,6 +75,8 @@ C_SOURCES_WITH_HEADERS = \
 	Src/drivers/uart.c \
 	Src/common/ring_buffer.c \
 	Src/common/assert_handler.c \
+	Src/common/trace.c \
+	external/printf/printf.c \
 
 ifndef TEST
 C_SOURCES =  \
@@ -235,10 +243,10 @@ flash: all
 	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
 #######################################
 cppcheck: 
-	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPP_CHECK_C_SOURCES)
+	@$(CPPCHECK) $(CPPCHECK_FLAGS) $(SOURCES_FORMAT_CPPCHECK)
 #######################################
 format:
-	@$(FORMAT) -i $(C_SOURCES) $(HEADERS)
+	@$(FORMAT) -i $(SOURCES_FORMAT_CPPCHECK) $(HEADERS_FORMAT_CPPCHECK)
 
 size: all
 	$(SZ) $(BIN_DIR)/$(TARGET).elf

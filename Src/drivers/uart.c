@@ -93,7 +93,9 @@ void USART3_IRQHandler(void)
         USART3->CR1 &= ~(0x1 << 6);
     }
 }
-void uart_putchar_interrupt(char c)
+//_putchar is the function name required by the printf implementation
+// renamed the uart driver interrupt function to _putchar
+void _putchar(char c)
 {
     // wait till ring buffer empties if full
     while (ring_buffer_full(&tx_buffer))
@@ -106,14 +108,7 @@ void uart_putchar_interrupt(char c)
     }
     NVIC_EnableIRQ(USART3_IRQn);
     if (c == '\n') {
-        uart_putchar_interrupt('\r');
-    }
-}
-void uart_print_interrupt(const char *string)
-{
-    size_t i = 0;
-    for (i = 0; i < strlen(string); i++) {
-        uart_putchar_interrupt(string[i]);
+        _putchar('\r');
     }
 }
 

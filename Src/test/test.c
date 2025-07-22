@@ -1,6 +1,7 @@
 #include "../drivers/io.h"
 #include "../drivers/mcu_init.h"
 #include "../common/assert_handler.h"
+#include "../common/trace.h"
 #include "../drivers/led.h"
 #include "../common/defines.h"
 #include "../drivers/uart.h"
@@ -46,7 +47,23 @@ static void test_uart_interrupt(void)
     uart_init();
     volatile int j;
     while (1) {
-        uart_print_interrupt("hello boy\n");
+        // printf("Hello boy %d\n", 20);
+        _putchar('h');
+        _putchar('h');
+        _putchar('h');
+        _putchar('h');
+        _putchar('\n');
+        BUSY_WAIT_ms(60);
+    }
+}
+SUPPRESS_UNUSED
+static void test_trace(void)
+{
+    test_setup();
+    trace_init();
+    volatile int j;
+    while (1) {
+        TRACE("TEST TRACE %d", 1);
         BUSY_WAIT_ms(60);
     }
 }

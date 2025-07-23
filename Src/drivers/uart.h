@@ -4,4 +4,9 @@
 void uart_init(void);
 void uart_putchar_polling(char c);
 void _putchar(char c);
+
+// to be called only by assert handler
+void uart_init_assert(void);
+void uart_trace_assert(const char *string);
+
 #endif // UART_H

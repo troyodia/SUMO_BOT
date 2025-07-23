@@ -137,7 +137,7 @@ endif
 # HEX = $(CP) -O ihex
 # BIN = $(CP) -O binary -S
 READELF=$(GCC_DIR)/$(PREFIX)readelf 
- 
+ADDR2LINE=$(GCC_DIR)/$(PREFIX)addr2line 
 #######################################
 # CFLAGS
 #######################################
@@ -178,9 +178,9 @@ C_INCLUDES =  \
 
 
 # compile gcc flags
-ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(DEFINES) $(OPT) -Wall -fdata-sections -ffunction-sections
+ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(DEFINES) $(OPT) -g -Wall -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(addprefix -I,$(C_INCLUDES)) $(OPT) $(DEFINES) -fshort-enums -Wall -Wextra -Werror -fdata-sections -ffunction-sections
+CFLAGS += $(MCU) $(C_DEFS) $(addprefix -I,$(C_INCLUDES)) $(OPT) $(DEFINES)  -g -gdwarf-2 -fshort-enums -Wall -Wextra -Werror -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -196,7 +196,7 @@ LDSCRIPT = STM32L476RGTX_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,--gc-sections
+LDFLAGS += $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS)  -g -Wl,--gc-sections
 
 # default action: build all
 all: $(BIN_DIR)/$(TARGET).elf 
@@ -253,4 +253,7 @@ size: all
 
 symbols: all
 	$(READELF) -s $(BIN_DIR)/$(TARGET).elf | sort -n -k3
+
+addr2line: all
+	$(ADDR2LINE) -e $(BIN_DIR)/$(TARGET).elf $(ADDR)
 # *** EOF ***

@@ -35,11 +35,8 @@ static inline void uart_tx_enable_interrupt(void)
     // TXEIE (transmit interrupt enable)
     USART3->CR1 |= 0x1 << 7;
 }
-
-void uart_init(void)
+static void uart_configure(void)
 {
-    ASSERT(!initialized);
-    init_uart_clock();
     USART3->CR1 &= ~(0x1); // disable UE
     USART3->CR1 &= ~((0x1 << 12) | (0x1 << 28)); // set the word length as 8 bits
 
@@ -50,9 +47,15 @@ void uart_init(void)
     /* set TE (transmit enable), RE (recive enable) bits first
      set the UE (USART enable) bit after all configurations have been done*/
     USART3->CR1 |= ((0x1 << 3) | (0x1 << 2) | 0x1);
-    __disable_irq();
+}
+void uart_init(void)
+{
+    ASSERT(!initialized);
+    init_uart_clock();
+    uart_configure();
+
     NVIC_EnableIRQ(USART3_IRQn);
-    __enable_irq();
+
     initialized = true;
 }
 static void uart_tx_start(void)
@@ -61,7 +64,39 @@ static void uart_tx_start(void)
         uart_tx_enable_interrupt();
     }
 }
+void uart_init_assert(void)
+{
+    NVIC_DisableIRQ(USART3_IRQn);
+    init_uart_clock();
+    uart_configure();
+    NVIC_EnableIRQ(USART3_IRQn);
+}
+void uart_putchar_polling(char c)
+{
+    /* wait for TXE to be empty
+       TXE is the transmit data empty register
+       it is set when data is transfered to the shft register */
+    while (!(USART3->ISR & (0x1 << 7)))
+        ;
 
+    /* some terminals need to see the carriage-return \r character after the line feed \n to
+     start a new line */
+    USART3->TDR = c;
+    if (c == '\n') {
+        while (!(USART3->ISR & (0x1 << 7)))
+            ;
+        uart_putchar_polling('\r');
+    }
+}
+
+void uart_trace_assert(const char *string)
+{
+    int i = 0;
+    while (string[i] != '\0') {
+        uart_putchar_polling(string[i]);
+        i++;
+    }
+}
 void USART3_IRQHandler(void)
 { /* check for if TXE and TXEIE are ready (both 1)
    * always check the flage and its interrupt to ensure the interrupt cleanly ends
@@ -109,22 +144,5 @@ void _putchar(char c)
     NVIC_EnableIRQ(USART3_IRQn);
     if (c == '\n') {
         _putchar('\r');
-    }
-}
-
-void uart_putchar_polling(char c)
-{
-    ASSERT(initialized);
-    /* wait for TXE to be empty
-    TXE is the transmit data empty register
-    it is set when data is transfered to the shft register */
-    while (!(USART3->ISR & (0x1 << 7)))
-        ;
-
-    /* some terminals need to see the carriage-return \r character after the line feed \n to
-     start a new line */
-    USART3->TDR = c;
-    if (c == '\n') {
-        uart_putchar_polling('\r');
     }
 }

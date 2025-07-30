@@ -3,6 +3,7 @@
 #define UNUSED(x) (void)(x)
 #define SUPPRESS_UNUSED __attribute__((unused))
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
+#define IS_PULSE_ODD(pulse) (pulse & 1)
 
 // STM32L3 runs at default 4MHz
 // switched to 80Mhz using HSI and PLL clocks

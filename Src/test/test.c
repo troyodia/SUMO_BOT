@@ -5,6 +5,7 @@
 #include "../drivers/led.h"
 #include "../common/defines.h"
 #include "../drivers/uart.h"
+#include "../drivers/ir_remote.h"
 static const io_e io_pins[] = { IO_I2C_SDA,           IO_I2C_SCL,
                                 IO_LD_FRONT_LEFT,     IO_LD_BACK_LEFT,
                                 IO_UART_TX,           IO_UART_RX,
@@ -169,6 +170,18 @@ static void test_io_interrupt(void)
     while (1)
 
         ;
+}
+SUPPRESS_UNUSED
+static void test_ir_remote(void)
+{
+    test_setup();
+    trace_init();
+    ir_remote_init();
+    volatile int j = 0;
+    while (1) {
+        TRACE("Command: %s", ir_get_cmd_str(ir_remote_get_cmd()));
+        BUSY_WAIT_ms(40)
+    }
 }
 int main()
 {

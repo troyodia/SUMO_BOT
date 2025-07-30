@@ -18,6 +18,10 @@ uint8_t ring_buffer_get(struct ring_buffer *rb)
     if (rb->tail == rb->size) {
         rb->tail = 0;
     }
+    // if ring buffer full 1+head == tail make more space in buffer and omit oldest element
+    if (rb->head == rb->tail) {
+        rb->tail++;
+    }
     return buffer_val;
 }
 uint8_t ring_buffer_peek(const struct ring_buffer *rb)

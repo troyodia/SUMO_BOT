@@ -92,6 +92,7 @@ static const struct io_config io_pins_initial_configs[IO_PIN_CNT] = {
                          .type = IO_TYPE_PP,
                          .af = IO_AF_NONE },
     // IR reciever setup as an input
+    // NO PUPD because the IR reciever has an internal PU resistor
     [IO_IR_REMOTE] = { .mode = IO_MODE_INPUT,
                        .pupd = IO_NO_PUPD,
                        .speed = IO_SPEED_LOW,
@@ -468,26 +469,21 @@ void io_deconfigure_interrupt(io_e io, io_trigger_e trigger, io_exti_section_e e
 }
 void io_enable_interrupt(io_exti_line_e line)
 {
-    __disable_irq();
-    // NVIC_SetPriority(EXTI15_10_IRQn,1);
     NVIC_EnableIRQ(exti_interrupt_lines[line]);
-    __enable_irq();
 }
 void io_disable_interrupt(io_exti_line_e line)
 {
-    __disable_irq();
     NVIC_DisableIRQ(exti_interrupt_lines[line]);
-    __enable_irq();
 }
 static void io_isr(io_e io)
 {
     const uint8_t pin = io_get_pin_idx(io);
     const uint8_t port = io_get_port(io);
     if (EXTI->PR1 & (0x1 << pin)) {
-        EXTI->PR1 |= (0x1 << pin); // clear the PR1 flag for the EXTI line
         if (isr_functions[port][pin] != NULL) {
             isr_functions[port][pin]();
         }
+        EXTI->PR1 |= (0x1 << pin); // clear the PR1 flag for the EXTI line
     }
 }
 
@@ -523,16 +519,17 @@ void EXTI4_IRQHandler(void)
 }
 void EXTI9_5_IRQHandler(void)
 {
-    io_ports_e io;
-    for (io = IO_PA_5; io <= IO_PA_9; io++) {
-        io_isr((io_e)io);
-    }
-    for (io = IO_PB_5; io <= IO_PB_9; io++) {
-        io_isr((io_e)io);
-    }
-    for (io = IO_PC_5; io <= IO_PC_9; io++) {
-        io_isr((io_e)io);
-    }
+    // io_ports_e io;
+    // for (io = IO_PA_5; io <= IO_PA_9; io++) {
+    //     io_isr((io_e)io);
+    // }
+    // for (io = IO_PB_5; io <= IO_PB_9; io++) {
+    //     io_isr((io_e)io);
+    // }
+    // for (io = IO_PC_5; io <= IO_PC_9; io++) {
+    //     io_isr((io_e)io);
+    // }
+    io_isr((io_e)IO_PA_8);
 }
 void EXTI15_10_IRQHandler(void)
 {

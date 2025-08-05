@@ -9,8 +9,10 @@
 // switched to 80Mhz using HSI and PLL clocks
 #define CLOCK_FREQ_1MHZ (1000000U)
 #define CLOCK_FREQ_80MHZ (80U * CLOCK_FREQ_1MHZ)
-#define CLOCK_FREQ_PER_ms (CLOCK_FREQ_80MHZ / 1000U)
+#define CLOCK_FREQ_80MHZ_ms (CLOCK_FREQ_80MHZ / 1000U)
 #define BUSY_WAIT_ms(delay_ms)                                                                     \
-    for (j = (delay_ms * CLOCK_FREQ_PER_ms); j > 0; j--) {                                         \
+    for (j = (delay_ms * CLOCK_FREQ_80MHZ_ms); j > 0; j--) {                                       \
     }; // takes the count for how long you want to delay
 #endif
+
+#define TIMER_PRESCALER (40u)

@@ -6,6 +6,7 @@
 #include "../common/defines.h"
 #include "../drivers/uart.h"
 #include "../drivers/ir_remote.h"
+#include "../drivers/pwm.h"
 static const io_e io_pins[] = { IO_I2C_SDA,           IO_I2C_SCL,
                                 IO_LD_FRONT_LEFT,     IO_LD_BACK_LEFT,
                                 IO_UART_TX,           IO_UART_RX,
@@ -181,6 +182,24 @@ static void test_ir_remote(void)
     while (1) {
         TRACE("Command: %s", ir_get_cmd_str(ir_remote_get_cmd()));
         BUSY_WAIT_ms(40)
+    }
+}
+SUPPRESS_UNUSED
+static void test_pwm(void)
+{
+    test_setup();
+    trace_init();
+    pwm_init();
+    const uint8_t duty_cycles[] = { 100, 75, 50, 25, 1, 0 };
+    const uint16_t pwm_delay = 300;
+    volatile int j;
+    while (1) {
+        for (uint8_t i = 0; i < ARRAY_SIZE(duty_cycles); i++) {
+            TRACE("Duty cycle set to %d for %d ms", duty_cycles[i], pwm_delay);
+            pwm_set_duty_cycle(PWM_TB6612FNG_LEFT_CH, duty_cycles[i]);
+            pwm_set_duty_cycle(PWM_TB6612FNG_RIGHT_CH, duty_cycles[i]);
+            BUSY_WAIT_ms(pwm_delay)
+        }
     }
 }
 int main()

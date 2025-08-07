@@ -125,24 +125,4 @@ void pwm_set_duty_cycle(pwm_ch_e channel, uint8_t duty_cycle_percent)
         *pwm_tb6612fng[channel].ccr = scale_pwm_down(duty_cycle_percent);
     }
     pwm_channel_enable(enable, channel);
-
-    // enable_timer_pwm_ch1();
-    // enable_timer_pwm_ch2();
-    // start_timer();
-    // switch (channel) {
-    // case PWM_TB6612FNG_LEFT_CH:
-    //     if (enable) {
-    //         TIM3->CCR1 = duty_cycle_percent;
-    //     }
-    //     pwm_channel_enable(enable, channel);
-    //     break;
-    // case PWM_TB6612FNG_RIGHT_CH:
-    //     if (enable) {
-    //         TIM3->CCR2 = duty_cycle_percent;
-    //     }
-    //     break;
-    // }
-    // if (timer_all_pwm_chs_disabled) {
-    //     stop_timer();
-    // }
 }

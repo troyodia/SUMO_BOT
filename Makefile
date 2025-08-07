@@ -75,6 +75,7 @@ C_SOURCES_WITH_HEADERS = \
 	Src/drivers/uart.c \
 	Src/drivers/ir_remote.c \
 	Src/drivers/pwm.c \
+	Src/drivers/tb6612fng.c \
 	Src/common/ring_buffer.c \
 	Src/common/assert_handler.c \
 	Src/common/trace.c \

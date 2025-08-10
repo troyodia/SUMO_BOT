@@ -286,6 +286,19 @@ static void test_drive(void)
         drive_set_config(dir, speed);
     }
 }
+SUPPRESS_UNUSED
+void test_stop_motors_assert(void)
+{
+    test_setup();
+    trace_init();
+    drive_init();
+    volatile int j;
+    drive_set_config(DRIVE_FORWARD_DIR, DRIVE_SPEED_MAX);
+    BUSY_WAIT_ms(2000);
+    ASSERT(0);
+    while (0)
+        ;
+}
 int main()
 {
     TEST();

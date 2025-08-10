@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#define TIMER_FREQ_ms (CLOCK_FREQ_80MHZ_ms / 1000U) // 2Mhz
+#define TIMER_FREQ_ms (CLOCK_FREQ_80MHZ_ms / TIMER_PRESCALER) // 2Mhz
 // we want the period to be 1ms
 #define TIMER_INTERRUPT_PERIOD_ms (1u)
 #define TIMER_INTERRUPT_TICKS (TIMER_FREQ_ms * TIMER_INTERRUPT_PERIOD_ms)

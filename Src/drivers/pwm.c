@@ -94,7 +94,7 @@ static void pwm_enable(bool enable)
 // value should never be zero
 static inline uint8_t scale_pwm_down(uint8_t duty_cycle_percent)
 {
-    return duty_cycle_percent > 1
+    return duty_cycle_percent != 1
         ? (3 * duty_cycle_percent) / 4
         : duty_cycle_percent; // do fraction muliplication to avoid floating point errors
 }

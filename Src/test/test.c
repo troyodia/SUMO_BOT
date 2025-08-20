@@ -9,6 +9,8 @@
 #include "../drivers/pwm.h"
 #include "../drivers/tb6612fng.h"
 #include "../app/drive.h"
+#include "../drivers/adc.h"
+#include "../drivers/qre1113.h"
 static const io_e io_pins[] = { IO_I2C_SDA,           IO_I2C_SCL,
                                 IO_LD_FRONT_LEFT,     IO_LD_BACK_LEFT,
                                 IO_UART_TX,           IO_UART_RX,
@@ -287,7 +289,7 @@ static void test_drive(void)
     }
 }
 SUPPRESS_UNUSED
-void test_stop_motors_assert(void)
+static void test_stop_motors_assert(void)
 {
     test_setup();
     trace_init();
@@ -298,6 +300,57 @@ void test_stop_motors_assert(void)
     ASSERT(0);
     while (0)
         ;
+}
+SUPPRESS_UNUSED
+static void test_adc(void)
+{
+    test_setup();
+    trace_init();
+    adc_init();
+    volatile int j;
+    adc_channel_values adc_channel_data = { 0 };
+    while (1) {
+        adc_read_channel_values(adc_channel_data);
+        // channel 1 -> index 0
+        // using (i+1) to match actual ADC channel structure, i.e. 1-16 rather than 0-15
+        for (uint8_t i = 0; i < ADC_CHANNEL_CNT; i++) {
+            TRACE("ADC CHANNEL %u | VAL : %u\n", i, adc_channel_data[i]);
+        }
+        BUSY_WAIT_ms(300);
+    };
+}
+
+SUPPRESS_UNUSED
+static void test_adc_single(void)
+{
+    test_setup();
+    trace_init();
+    adc_single_init();
+    volatile int j;
+    uint32_t value;
+    while (1) {
+        adc_read_value(&value);
+        TRACE("ADC CHANNEL %u | VAL : %u", 15, value);
+        BUSY_WAIT_ms(500);
+    };
+}
+SUPPRESS_UNUSED
+static void test_qre1113(void)
+{
+    test_setup();
+    trace_init();
+    qre1113_init();
+    volatile int j;
+    struct qre1113_voltages voltages = { 0, 0, 0, 0 };
+    while (1) {
+        qre1113_get_voltages(&voltages);
+
+        TRACE("LINE SENSOR FRONT RIGHT: %u", voltages.qre1113_front_right);
+        TRACE("LINE SENSOR FRONT LEFT: %u", voltages.qre1113_front_left);
+        TRACE("LINE SENSOR BACK RIGHT: %u", voltages.qre1113_back_right);
+        TRACE("LINE SENSOR BACK LEFT: %u\n", voltages.qre1113_back_left);
+        BUSY_WAIT_ms(500);
+    };
 }
 int main()
 {
